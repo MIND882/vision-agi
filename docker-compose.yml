@@ -1,0 +1,56 @@
+# ============================================================
+# REASONING CORE — Local Infrastructure
+# docker-compose.yml
+#
+# Spins up PostgreSQL + ChromaDB server locally
+# so you don't need to install them on your machine.
+#
+# Usage:
+#   docker-compose up -d        # start in background
+#   docker-compose down         # stop
+#   docker-compose logs -f db   # watch Postgres logs
+# ============================================================
+
+version: "3.9"
+
+services:
+
+  # ── PostgreSQL — Semantic Memory ──────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: rc_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── ChromaDB — Episodic Memory (optional in Phase 1) ──────
+  # Phase 1 uses local persistent mode — you don't NEED this service yet.
+  # Uncomment when you switch CHROMA_MODE=http in Week 5+
+  #
+  # chroma:
+  #   image: chromadb/chroma:latest
+  #   container_name: rc_chroma
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - chroma_data:/chroma/chroma
+  #   environment:
+  #     IS_PERSISTENT: "TRUE"
+  #     PERSIST_DIRECTORY: /chroma/chroma
+
+volumes:
+  postgres_data:
+  # chroma_data:
