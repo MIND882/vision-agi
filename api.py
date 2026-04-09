@@ -212,7 +212,82 @@ async def status():
         "active_sessions": len(_sessions),
         "version":         "2.1",
     }
+# ── Admin routes — add these to api.py ──────────────────────
+# Copy karo api.py mein, /status route ke baad
 
+@app.get("/admin")
+async def admin():
+    """Serve admin dashboard."""
+    html_path = Path(__file__).parent / "ui" / "admin.html"
+    if html_path.exists():
+        return HTMLResponse(html_path.read_text(encoding="utf-8"))
+    return HTMLResponse("<h2>admin.html not found in ui/ folder</h2>")
+
+
+@app.get("/admin/bookings")
+async def admin_bookings():
+    """All bookings for admin dashboard."""
+    try:
+        import psycopg2
+        import psycopg2.extras
+        from config import cfg
+        with psycopg2.connect(cfg.POSTGRES_DSN) as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                # All bookings
+                cur.execute("""
+                    SELECT booking_id, customer_name, phone, service_type,
+                           preferred_date::text, time_slot, status, created_at::text
+                    FROM appointments
+                    ORDER BY created_at DESC LIMIT 20
+                """)
+                bookings = [dict(r) for r in cur.fetchall()]
+
+                # Today count
+                cur.execute("SELECT COUNT(*) AS today FROM appointments WHERE preferred_date = CURRENT_DATE")
+                today_row = cur.fetchone()
+                today = int(today_row["today"]) if today_row else 0
+
+                # Total
+                cur.execute("SELECT COUNT(*) AS total FROM appointments")
+                total_row = cur.fetchone()
+                total = int(total_row["total"]) if total_row else 0
+
+        return {"bookings": bookings, "today": today, "total": total}
+    except Exception as e:
+        return {"bookings": [], "today": 0, "total": 0, "error": str(e)}
+
+
+@app.get("/admin/leads")
+async def admin_leads():
+    """Leads + pipeline for admin dashboard."""
+    try:
+        import psycopg2
+        import psycopg2.extras
+        from config import cfg
+        with psycopg2.connect(cfg.POSTGRES_DSN) as conn:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                # Hot leads
+                cur.execute("""
+                    SELECT lead_id, name, phone, issue, stage, score, created_at::text
+                    FROM leads
+                    WHERE stage NOT IN ('closed_won', 'closed_lost')
+                    ORDER BY score DESC, created_at DESC
+                    LIMIT 20
+                """)
+                leads = [dict(r) for r in cur.fetchall()]
+
+                # Pipeline
+                cur.execute("SELECT stage, COUNT(*) AS count FROM leads GROUP BY stage")
+                pipeline = {row["stage"]: int(row["count"]) for row in cur.fetchall()}
+
+                # Total
+                cur.execute("SELECT COUNT(*) AS total FROM leads")
+                total_row = cur.fetchone()
+                total = int(total_row["total"]) if total_row else 0
+
+        return {"leads": leads, "pipeline": pipeline, "total": total}
+    except Exception as e:
+        return {"leads": [], "pipeline": {}, "total": 0, "error": str(e)}
 
 @app.get("/sessions")
 async def sessions():

@@ -85,7 +85,7 @@ if __name__ == "__main__":
     args = sys.argv[1:]
 
     if "--list-roles" in args:
-        from roles.role_factory import RoleFactory
+        from role.role_factory import RoleFactory
         print("Available Digital Human roles:\n")
         for name, d in RoleFactory.list_all().items():
             print(f"  --role {name:8} → {d['name']:8} | {d['role']}")
