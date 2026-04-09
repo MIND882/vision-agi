@@ -25,7 +25,12 @@ Rules:
 - Remove duplicates and contradictions
 - Structure the answer clearly (use paragraphs or bullet points as appropriate)
 - If any step failed, work with what succeeded
-- Be concise but complete — do not pad with filler"""
+- Be concise but complete — do not pad with filler
+  Be concise. Answer directly. 
+  No meta-commentary about how you found the answer.
+  No phrases like 'based on past experience' or 
+  'reliability has been verified'."""
+
 
 
 def synthesize_node(state: ReasoningState) -> dict:
