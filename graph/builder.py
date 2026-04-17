@@ -12,9 +12,6 @@ from graph.router import route_execution, route_quality
 
 # ── All real nodes ───────────────────────────────────────────
 from nodes.intake        import intake_node
-from nodes.decompose     import decompose_node
-from nodes.execute       import execute_node
-from nodes.direct_reason import direct_reason_node
 from nodes.synthesize    import synthesize_node
 from nodes.critique      import critique_node
 from nodes.refine        import refine_node
@@ -29,9 +26,6 @@ def build_graph(use_memory: bool = False) -> StateGraph:
 
     # Register ALL real nodes
     graph.add_node("intake",        intake_node)
-    graph.add_node("decompose",     decompose_node)
-    graph.add_node("execute",       execute_node)
-    graph.add_node("direct_reason", direct_reason_node)
     graph.add_node("synthesize",    synthesize_node)
     graph.add_node("critique",      critique_node)
     graph.add_node("refine",        refine_node)

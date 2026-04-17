@@ -8,7 +8,7 @@
 # RULE: no node imports from another node — only from state.
 # ============================================================
 
-from typing import TypedDict, Annotated, Optional
+from typing import List, TypedDict, Annotated, Optional
 from langgraph.graph.message import add_messages
 import operator
 
@@ -186,4 +186,14 @@ class ReasoningState(TypedDict):
     memory_written:   bool
     # Flag set to True once MEMORY_WRITE has persisted learnings.
     # Prevents double-writes if the graph is retried.
-
+     # ── NEW: MindOS Context ────────────────────
+    user_id: str                    # which user
+    raw_emails: List[dict]          # fetched from Gmail
+    raw_events: List[dict]          # fetched from Calendar
+    raw_tasks: List[dict]           # fetched from Notion
+    
+    # ── NEW: Priority Output ───────────────────
+    top_priorities: List[dict]      # [{task, why, urgency, time_needed}]
+    blocked_items: List[dict]       # kya ruka hua hai aur kyun
+    deep_work_slots: List[dict]     # calendar pe free blocks
+    brief_html: str                 # morning brief HTML string
